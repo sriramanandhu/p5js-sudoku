@@ -84,7 +84,7 @@ function mousePressed() {
       }
     }
   }
-  selectedCell = -1;
+  // selectedCell = -1;
 }
 
 function keyTyped() {
