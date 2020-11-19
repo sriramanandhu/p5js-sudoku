@@ -28,8 +28,9 @@ function Cell(row, col, num) {
 
     fill(0);
     noStroke();
+    textAlign(CENTER);
     if (this.num)
-      text(this.num, this.xpos + 0.28 * this.size, this.ypos + 0.8 * this.size);
+      text(this.num, this.xpos + 0.5 * this.size, this.ypos + 0.7 * this.size);
   }
 
   this.clicked = function(mx, my) {
@@ -84,7 +85,7 @@ function Cell(row, col, num) {
     let gg = color(0, 255, 0);
     let ww = color(255, 255, 255);
     
-    g = lerpColor(ww, gg, 1/s);
+    g = lerpColor(ww, gg, 1/s); // from white to green
     
     this.color = g;//[255-g, 255, 255-g];
     // return (0, g, 0);

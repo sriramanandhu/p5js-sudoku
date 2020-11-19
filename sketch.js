@@ -1,30 +1,21 @@
-//jshint esversion: 6
-
-var w = 300;
+var w, windowSize; // = 300; // size of the grid
 var grid = [];
-// var grid = [
-//   [0, 0, 0, 0, 3, 0, 0, 2, 7],
-//   [0, 6, 2, 0, 5, 0, 0, 9, 0],
-//   [0, 7, 0, 0, 0, 0, 0, 0, 0],
-//   [0, 9, 0, 6, 0, 0, 1, 0, 0],
-//   [1, 0, 0, 0, 2, 0, 0, 0, 4],
-//   [0, 0, 8, 0, 0, 5, 0, 7, 0],
-//   [0, 0, 0, 0, 0, 0, 0, 8, 0],
-//   [0, 2, 0, 0, 1, 0, 7, 5, 0],
-//   [3, 8, 0, 0, 7, 0, 0, 4, 2]
-// ];
+
+var mode = 0;
+const welcomeScreen = 0;
+const gameScreen = 1;
 
 var cellArray = [];
 var btnArray = [];
 var selectedCell = -1;
 var hintText = "";
 
-function setup() {
-  createCanvas(400, 400);
-
+function initGame() {
+  w = 0.8 * windowSize;
   // w = width;
   textSize(28);
 
+  // initialize an empty grid
   for (let i = 0; i < 9; i++) {
     grid.push([]);
     for (let j = 0; j < 9; j++) {
@@ -41,10 +32,11 @@ function setup() {
   }
 
   for (let i = 0; i <= 9; i++) {
-    let x = (i * w / 9 + 35);
+    let x = (i * (w / 9) + (w / 10));
     // let newBtn = new Button(x, 350, w/9, i);
     let newBtn = createButton(str(i), str(i));
-    newBtn.position(x, 360);
+    newBtn.position(x, 0.92 * windowSize);
+    newBtn.size(w/10, w/10);
     newBtn.mousePressed(function() {
       setNum(newBtn.value());
     });
@@ -52,46 +44,98 @@ function setup() {
   }
 }
 
+function setup() {
+  if (windowWidth > windowHeight) {
+    windowSize = windowHeight;
+  } else {
+    windowSize = windowWidth;
+  }
+  createCanvas(windowSize, windowSize);
+
+  initGame();
+}
+
 function draw() {
   background(220);
-  translate(width / 9, width / 9);
 
-  for (let cRow of cellArray) {
-    for (let c of cRow)
-      c.show();
+  if (mode === welcomeScreen) {
+    textSize(40);
+    textFont("courier");
+    textStyle(BOLD);
+    textAlign(CENTER);
+    text("Sudoku", width / 2, height / 2);
+    textSize(16);
+    text("Click to Start!", width / 2, 0.6 * height);
+
+  } else if (mode === gameScreen) {
+
+    translate(width / 9, width / 9);
+
+    for (let cRow of cellArray) {
+      for (let c of cRow)
+        c.show();
+    }
+    blueBoxs();
+    // greyLines();
+
+    highlightSelected();
+
+    // displayHint();
+    push();
+    noStroke();
+    fill(0);
+    textAlign(LEFT);
+    text(hintText, 0, -10);
+    pop();
   }
-  blueBoxs();
-  // greyLines();
-
-  highlightSelected();
-
-  // displayHint();
-  push();
-  noStroke();
-  fill(0);
-  text(hintText, 0, -10);
-  pop();
 }
 
 function mousePressed() {
-  for (let cRow of cellArray) {
-    for (let c of cRow) {
-      if (c.clicked(mouseX - width / 9, mouseY - width / 9)) {
-        selectedCell = c;
-        let hintSet = c.possibleValues();
-        hintText = setHintText(hintSet);
-        return;
+  if (mode == welcomeScreen) {
+    mode = gameScreen;
+    textSize(28);
+    // textFont("original");
+    textAlign(LEFT);
+  } else if (mode == gameScreen) {
+    for (let cRow of cellArray) {
+      for (let c of cRow) {
+        if (c.clicked(mouseX - width / 9, mouseY - width / 9)) {
+          selectedCell = c;
+          let hintSet = c.possibleValues();
+          hintText = setHintText(hintSet);
+          return;
+        }
       }
     }
+    // selectedCell = -1;
   }
-  // selectedCell = -1;
 }
 
 function keyTyped() {
-  if (!isNaN(int(key))) {
+  if (!isNaN(int(key))) { // checks if it is number
     setNum(key);
   }
   // console.log(int(key));
+}
+
+function keyPressed() {
+  if (mode == gameScreen && selectedCell != -1) {
+    let curr_i = selectedCell.row;
+    let curr_j = selectedCell.col;
+
+    if (keyCode == RIGHT_ARROW && curr_j < 8) {
+      selectedCell = cellArray[curr_i][curr_j + 1];
+    } else if (keyCode == LEFT_ARROW && curr_j > 0) {
+      selectedCell = cellArray[curr_i][curr_j - 1];
+    } else if (keyCode == UP_ARROW && curr_i > 0) {
+      selectedCell = cellArray[curr_i - 1][curr_j];
+    } else if (keyCode == DOWN_ARROW && curr_i < 8) {
+      selectedCell = cellArray[curr_i + 1][curr_j];
+    }
+
+    let hintSet = selectedCell.possibleValues();
+    hintText = setHintText(hintSet);
+  }
 }
 
 function blueBoxs() {
